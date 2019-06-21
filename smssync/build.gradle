@@ -19,7 +19,7 @@ import org.ajoberstar.gradle.git.release.opinion.Strategies
 import org.ajoberstar.grgit.Grgit
 
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
+//apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'org.ajoberstar.release-opinion'
 apply plugin: 'com.github.triplet.play'
 
@@ -52,7 +52,6 @@ def globalConfiguration = rootProject.extensions.getByName("ext")
 
 android {
     compileSdkVersion globalConfiguration.getAt("androidCompileSdkVersion")
-    buildToolsVersion globalConfiguration.getAt("androidBuildToolsVersion")
 
     signingConfigs {
 
@@ -138,33 +137,25 @@ android {
 
     android.applicationVariants.all { variant ->
         variant.outputs.each { output ->
-            def outputFile = output.outputFile
-            if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                def newName = outputFile.name.replace(outputFile.name,
-                        "smssync-${variant.name}-v" + defaultConfig.versionName + "-" +
-                                variant.buildType.name.toUpperCase() +
-                                ".apk");
-
-                output.outputFile = file("$project.buildDir/apk/" + newName);
-                if (output.zipAlign) {
-                    output.zipAlign.outputFile =
-                            file("$project.buildDir/apk/" + newName.replace("-unaligned", ""));
-                }
-            }
+            output.outputFileName = output.outputFile.name.replace("app-release.apk", "smssync.apk")
         }
     }
+    flavorDimensions "version"
 
     productFlavors {
 
         withAnalytics {
+            dimension "version"
             applicationId 'org.addhen.smssync'
         }
 
         noAnalytics {
+            dimension "version"
             applicationId 'org.addhen.smssync'
         }
 
         internal {
+            dimension "version"
             applicationId 'org.addhen.smssync.internal'
         }
     }
@@ -172,7 +163,7 @@ android {
     dexOptions {
         // Skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
         preDexLibraries = preDexEnabled && !isTravis
-        incremental = true;
+//        incremental = true;
     }
 
     testOptions {
@@ -184,9 +175,9 @@ android {
     }
 }
 
-retrolambda {
-    jvmArgs '-noverify'
-}
+//retrolambda {
+//    jvmArgs '-noverify'
+//}
 
 release {
     grgit = Grgit.open(dir: '.')
@@ -195,8 +186,11 @@ release {
 
     versionStrategy Strategies.PRE_RELEASE_ALPHA_BETA
 
-    android.defaultConfig.versionName = project.version.toString()
 
+    android.defaultConfig{
+        versionName = project.version.toString()
+        vectorDrawables.useSupportLibrary = true
+    }
     tagStrategy {
         generateMessage = { version -> "\n\nRelease of $version.version\n$tagMessage" }
     }
@@ -234,37 +228,37 @@ task runApp(type: Exec, dependsOn: ['build', 'installWithAnalyticsDebug']) {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'libs', include: '*.jar')
     def appDependencies = rootProject.ext.appDependencies
     def appTestDependencies = rootProject.ext.appTestDependencies
     annotationProcessor appDependencies.daggerCompiler // Needed for source code generation
     annotationProcessor appDependencies.butterKnifeComplier
-    compile appDependencies.raiburari
-    compile appDependencies.cupboard
-    compile appDependencies.butterKnife
-    compile appDependencies.wakeful
-    compile appDependencies.okHttp
-    compile appDependencies.twitter4jCore
-    compile appDependencies.nineOldAndroids
-    compile appDependencies.loggingInterceptor
-    compile appDependencies.bottomSheet
-    compile appDependencies.zXingQRCode
-    compile appDependencies.supportPreference
-    compile appDependencies.timber
+    implementation appDependencies.raiburari
+    implementation appDependencies.cupboard
+    implementation appDependencies.butterKnife
+    implementation appDependencies.wakeful
+    implementation appDependencies.okHttp
+    implementation appDependencies.twitter4jCore
+    implementation appDependencies.nineOldAndroids
+    implementation appDependencies.loggingInterceptor
+    implementation appDependencies.bottomSheet
+    implementation appDependencies.zXingQRCode
+    implementation appDependencies.supportPreference
+    implementation appDependencies.timber
     // Firebase(analytics, crash report)
-    compile appDependencies.firebaseCore
-    compile appDependencies.firebaseCrash
-    provided appDependencies.javaxAnnotation // Needed to resolve compilation errors
+    implementation appDependencies.firebaseCore
+    implementation appDependencies.firebaseCrash
+    compileOnly appDependencies.javaxAnnotation // Needed to resolve compilation errors
 
     // Test depedencies
-    testCompile appTestDependencies.junit
-    testCompile appTestDependencies.mockito
-    testCompile appTestDependencies.mockWebServer
+    testImplementation appTestDependencies.junit
+    testImplementation appTestDependencies.mockito
+    testImplementation appTestDependencies.mockWebServer
     testAnnotationProcessor appDependencies.daggerCompiler
 
-    androidTestCompile appTestDependencies.mockito
-    androidTestCompile appTestDependencies.dexmaker
-    androidTestCompile appTestDependencies.dexmakerMockito
+    androidTestImplementation appTestDependencies.mockito
+    androidTestImplementation appTestDependencies.dexmaker
+    androidTestImplementation appTestDependencies.dexmakerMockito
     androidTestAnnotationProcessor appDependencies.daggerCompiler
 }
 
