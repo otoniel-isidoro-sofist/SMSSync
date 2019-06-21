@@ -21,9 +21,10 @@ buildscript {
         maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
 
         maven { url 'https://jitpack.io' }
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0-beta3'
+        classpath 'com.android.tools.build:gradle:3.4.1'
         classpath 'me.tatarka:gradle-retrolambda:3.5.0'
         classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
         classpath 'com.github.triplet.gradle:play-publisher:1.1.5'
@@ -43,6 +44,7 @@ allprojects {
         maven {
             url "http://repo.commonsware.com.s3.amazonaws.com"
         }
+        google()
     }
 
     ext {
@@ -51,7 +53,3 @@ allprojects {
     }
 }
 
-task wrapper(type: Wrapper) {
-    description 'Creates the gradle wrapper.'
-    gradleVersion '2.10'
-}
